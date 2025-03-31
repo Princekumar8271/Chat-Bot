@@ -10,20 +10,27 @@
     z-index: -1;
     overflow: hidden;
     will-change: transform; /* Hardware acceleration hint */
+    transform: translateZ(-10px); /* Push background further back */
 }
 
 /* Ensure content is visible over the 3D background - optimized for performance */
 .content-container {
     position: relative;
-    z-index: 1;
+    z-index: 10;
     background-color: rgba(2, 2, 4, 0.92); /* Darker semi-transparent background */
     border-radius: 1rem;
     backdrop-filter: blur(8px); /* Increased blur for better text contrast */
     -webkit-backdrop-filter: blur(8px); /* For Safari support */
-    box-shadow: 0 4px 25px rgba(170, 0, 255, 0.4); /* Enhanced purple glow */
+    box-shadow: 0 8px 32px rgba(170, 0, 255, 0.5); /* Enhanced purple glow */
     will-change: transform, opacity; /* Hardware acceleration hint */
-    transform: translateZ(0); /* Force GPU acceleration */
+    transform: translateZ(20px) perspective(1000px); /* Enhanced 3D effect */
     border: 1px solid rgba(170, 85, 255, 0.3); /* More visible purple border */
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.content-container:hover {
+    transform: translateZ(25px) perspective(1000px) scale(1.01);
+    box-shadow: 0 12px 48px rgba(170, 0, 255, 0.6);
 }
 
 /* Text color overrides for dark theme */
@@ -74,9 +81,18 @@ button:disabled {
 
 /* Chat interface styling for dark theme */
 #chat {
+    position: relative;
+    z-index: 15;
     background-color: rgba(30, 30, 40, 0.7) !important; /* Dark chat background */
     border: 1px solid rgba(170, 85, 255, 0.2); /* Subtle purple border */
-    box-shadow: inset 0 0 10px rgba(202, 33, 33, 0.531); /* Inner shadow for depth */
+    box-shadow: inset 0 0 10px rgba(202, 33, 33, 0.531), 0 8px 16px rgba(0, 0, 0, 0.3); /* Enhanced depth */
+    transform: translateZ(5px);
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+#chat:hover {
+    transform: translateZ(10px) scale(1.005);
+    box-shadow: inset 0 0 10px rgba(202, 33, 33, 0.531), 0 12px 24px rgba(0, 0, 0, 0.4);
 }
 
 /* Chat header styling - highlight Beluga name */
@@ -88,7 +104,7 @@ button:disabled {
 
 /* Chat message styling */
 #chat .text-left {
-    color: rgba(197, 255, 121, 0.9) !important; /* Brighter green for bot messages */
+    color: rgb(98, 255, 0) !important; /* Brighter green for bot messages */
 }
 
 #chat .text-right {
@@ -113,9 +129,11 @@ input[type="text"]::placeholder {
 
 /* 3D depth effect for buttons */
 button {
-    transform: translateZ(0);
-    transition: transform 0.2s, box-shadow 0.2s !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    position: relative;
+    z-index: 20;
+    transform: translateZ(15px);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
 }
 
 button:not([disabled]):hover {
