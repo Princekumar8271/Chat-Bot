@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beluga Focus Timer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen">
+    <!-- 3D Brain Animation Background -->
+    <div id="brain-bg"></div>
+    
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto content-container rounded-lg shadow-lg p-6">
+            <h1 class="text-3xl font-bold text-center mb-8 text-indigo-600">Beluga Focus Timer</h1>
+            <div class="mb-2 text-center">
+                <h2 class="text-2xl font-bold text-violet-300 mb-3 animate-pulse">About the Beluga Technique</h2>
+                <div class="space-y-2">
+                    <p class="text-lg font-semibold text-white">Regular focus: <span class="text-fuchsia-200 font-bold">30 minutes</span></p>
+                    <p class="text-white font-bold">45 minutes</span> 
+                        <span class="text-gray-200">(unlocked after consecutive sessions)</span>
+                    </p>
+                </div>
+                <p class="text-sm text-white mt-2">Using the innovative Beluga Technique - not just another Pomodoro timer!</p>
+            </div>
+            <div class="mb-8 text-center">
+                <div id="timer" class="text-6xl font-bold text-gray-800 mb-4">30:00</div>
+                <div id="state" class="text-xl text-gray-600 mb-4">Ready to focus</div>
+                <div id="task" class="text-lg text-gray-600 italic"></div>
+            </div>
+
+            <div class="mb-6">
+                <input type="text" id="taskInput" placeholder="Enter your task..." class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <button id="startBtn" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">Start Focus</button>
+                <button id="pauseBtn" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-colors" disabled>Pause</button>
+                <button id="resumeBtn" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors" disabled>Resume</button>
+                <button id="stopBtn" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors" disabled>Stop</button>
+            </div>
+
+            <div class="mb-8">
+                <button id="completeBtn" class="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors" disabled>Complete Session</button>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-2xl font-semibold mb-4 text-violet-500">Beluga Technique Statistics</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="stats" class="text-white bg-purple-50 bg-opacity-10 backdrop-blur-sm p-4 rounded-lg"></div>
+                    <div class="bg-purple-50 bg-opacity-10 backdrop-blur-sm p-4 rounded-lg">
+                        <canvas class="text-white" id="statsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4 bg-purple-100 bg-opacity-30 backdrop-blur-md p-6 rounded-lg shadow-lg transition-all duration-300 hover:bg-opacity-40" style="backdrop-filter: blur(12px); background: linear-gradient(135deg, rgba(147, 51, 234, 0.1), rgba(139, 92, 246, 0.15));">
+                <h3 class="text-xl text-white font-bold mb-4 text-violet-500 tracking-wide animate-pulse flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"></path>
+                    </svg>
+                    About the Beluga Technique
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-center text-white space-x-3 text-fuchsia-500 hover:text-fuchsia-600 transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-white text-lg">Regular focus: <span class="font-bold text-white text-fuchsia-600">30 minutes</span></span>
+                    </div>
+                    <div class="flex items-center text-white space-x-3 text-violet-500 hover:text-violet-600 transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-lg text-white">Deep focus: <span class="font-bold text-white text-violet-600">45 minutes</span> <span class="text-violet-400">(unlocked after consecutive sessions)</span></span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-purple-500 hover:text-purple-600 transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span class="text-lg">Short breaks: <span class="font-bold text-purple-600">7 minutes</span></span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-indigo-400 hover:text-indigo-500 transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-lg">Micro-breaks: <span class="font-bold text-indigo-500">2 minutes</span> <span class="text-indigo-400">(for quick refreshes)</span></span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-purple-400 hover:text-purple-500 transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                        </svg>
+                        <span class="text-lg">Long breaks: <span class="font-bold text-purple-500">20 minutes</span> <span class="text-purple-400">(after 3 completed cycles)</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-white beluga-chat-header">Chat with Beluga</h2>
+                <div id="chat" class="bg-purple-900 bg-opacity-10 backdrop-blur-sm p-4 rounded-lg h-64 overflow-y-auto mb-2">
+                    <div class="text-center text-fuchsia-300 my-1">Welcome to Beluga Focus Timer!<br>Type 'help' to see available commands</div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="chatInput" placeholder="Ask Beluga something..." 
+                        class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="sendBtn" 
+                        class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">Send</button>
+                </div>
+            </div>
+            
+            <!-- Move motivation section inside the main container -->
+            <div class="text-center mb-4">
+                <button id="motivateBtn" class="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors">Motivate Me!</button>
+                <div id="motivation" class="mt-4 text-fuchsia-300 italic"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chat functionality
+        sendBtn.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            const userMsg = document.createElement('div');
+            userMsg.className = 'text-right text-blue-600 my-1';
+            userMsg.textContent = 'You: ' + message;
+            chatDisplay.appendChild(userMsg);
+            
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMsg = document.createElement('div');
+                botMsg.className = 'text-left text-green-600 my-1';
+                botMsg.innerHTML = 'Beluga: ' + data.response.replace(/\n/g, '<br>');
+                chatDisplay.appendChild(botMsg);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-center text-red-600 my-1';
+                errorMsg.textContent = 'Error: Failed to get response';
+                chatDisplay.appendChild(errorMsg);
+            });
+            
+            chatInput.value = '';
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+
+        // This script will be executed after the socket is initialized in the main script below
+    </script>
+    
+</div>
+
+<script>
+    const socket = io();
+    let timerState = 'idle';
+
+    // UI Elements
+    const timerDisplay = document.getElementById('timer');
+    const stateDisplay = document.getElementById('state');
+    const taskDisplay = document.getElementById('task');
+    const taskInput = document.getElementById('taskInput');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const completeBtn = document.getElementById('completeBtn');
+    const statsDisplay = document.getElementById('stats');
+    const chatDisplay = document.getElementById('chat');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const motivateBtn = document.getElementById('motivateBtn');
+    const motivationDisplay = document.getElementById('motivation');
+
+    // Socket events
+    socket.on('timer_update', function(data) {
+        if (data && typeof data === 'object') {
+            updateTimerDisplay(data);
+        } else {
+            console.error('Invalid timer update data:', data);
+        }
+    });
+
+    // Function removed - using the implementation below
+
+    // Update button click handlers
+    pauseBtn.addEventListener('click', async () => {
+        const response = await fetch('/api/pause', { method: 'POST' });
+        const data = await response.json();
+        if (data.status) {
+            updateTimerDisplay(data);
+        }
+    });
+
+    resumeBtn.addEventListener('click', async () => {
+        const response = await fetch('/api/resume', { method: 'POST' });
+        const data = await response.json();
+        if (data.status) {
+            updateTimerDisplay(data);
+        }
+    });
+    
+    // Chat event listeners
+    socket.on('chat_response', function(data) {
+        const messageElement = document.createElement('div');
+        messageElement.textContent = 'Beluga: ' + data.message;
+        messageElement.className = 'text-left text-green-600 my-1';
+        chatDisplay.appendChild(messageElement);
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    });
+    
+    sendBtn.addEventListener('click', () => {
+        const message = chatInput.value;
+        if (message.trim() !== '') {
+            socket.emit('chat_message', { message });
+            
+            // Add user message to chat display
+            const userMessageElement = document.createElement('div');
+            userMessageElement.textContent = 'You: ' + message;
+            userMessageElement.className = 'text-right text-blue-600 my-1';
+            chatDisplay.appendChild(userMessageElement);
+            
+            chatInput.value = '';
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        }
+    });
+    
+    // Allow sending message with Enter key
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendBtn.click();
+        }
+    });
+
+    // Button click handlers
+    startBtn.addEventListener('click', async () => {
+        const response = await fetch('/api/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ task: taskInput.value })
+        });
+        updateButtons('focus');
+    });
+
+    pauseBtn.addEventListener('click', async () => {
+        await fetch('/api/pause', { method: 'POST' });
+        updateButtons('paused');
+    });
+
+    resumeBtn.addEventListener('click', async () => {
+        const response = await fetch('/api/resume', { method: 'POST' });
+        const data = await response.json();
+        // No need to manually call updateButtons here
+        // The socket.io 'timer_update' event will trigger updateTimerDisplay
+        // which will then call updateButtons with the correct state
+    });
+
+    stopBtn.addEventListener('click', async () => {
+        await fetch('/api/stop', { method: 'POST' });
+        updateButtons('idle');
+    });
+
+    completeBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/complete', { method: 'POST' });
+            const data = await response.json();
+            if (data.message) {
+                // Show completion message
+                const messageElement = document.createElement('div');
+                messageElement.className = 'text-center text-green-600 my-2';
+                messageElement.textContent = data.message;
+                chatDisplay.appendChild(messageElement);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+                
+                // Update stats immediately
+                updateStats();
+            }
+        } catch (error) {
+            console.error('Error completing session:', error);
+        }
+    });
+
+    // Update button states based on timer state
+    function updateButtons(state) {
+        startBtn.disabled = state !== 'idle';
+        pauseBtn.disabled = !['focus', 'deep_focus', 'short_break', 'micro_break', 'long_break'].includes(state);
+        resumeBtn.disabled = state !== 'paused';
+        stopBtn.disabled = state === 'idle';
+        completeBtn.disabled = !['focus', 'deep_focus'].includes(state);
+
+        // Update button styles
+        [startBtn, pauseBtn, resumeBtn, stopBtn, completeBtn].forEach(btn => {
+            btn.classList.toggle('opacity-50', btn.disabled);
+            btn.classList.toggle('cursor-not-allowed', btn.disabled);
+        });
+    }
+
+    motivateBtn.addEventListener('click', async () => {
+        // Send a chat message to Beluga requesting a motivational quote
+        const userMsg = document.createElement('div');
+        userMsg.className = 'text-right text-blue-600 my-1';
+        userMsg.textContent = 'You: Show me a motivational quote';
+        chatDisplay.appendChild(userMsg);
+        
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'Show me a motivational quote' })
+            });
+            
+            const data = await response.json();
+            
+            // Display the quote in both chat and motivation display
+            const botMsg = document.createElement('div');
+            botMsg.className = 'text-left text-green-600 my-1';
+            botMsg.innerHTML = 'Beluga: ' + data.response.replace(/\n/g, '<br>');
+            chatDisplay.appendChild(botMsg);
+            
+            // Update motivation display
+            
+            // Scroll chat to bottom
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        } catch (error) {
+            console.error('Error getting motivation:', error);
+            motivationDisplay.textContent = 'Failed to get motivation. Please try again.';
+        }
+    });
+
+    // Update timer display
+    function updateTimerDisplay(status) {
+        if (typeof status === 'object') {
+            // Handle timer_update socket event data
+            timerState = status.is_paused ? 'paused' : status.state;
+            stateDisplay.textContent = getStateText(timerState);
+            if (status.status) {
+                const timeMatch = status.status.match(/Time remaining: (\d{2}:\d{2})/);
+                if (timeMatch) timerDisplay.textContent = timeMatch[1];
+            }
+        } else {
+            // Handle string status
+            const lines = status.split('\n');
+            if (lines[0].includes('No active timer')) {
+                timerState = 'idle';
+                stateDisplay.textContent = 'Ready to focus';
+                timerDisplay.textContent = '30:00';
+                taskDisplay.textContent = '';
+            } else {
+                const stateMatch = lines[0].match(/Current state: (\w+)/);
+                if (stateMatch) {
+                    timerState = stateMatch[1];
+                    stateDisplay.textContent = getStateText(timerState);
+                }
+
+                const timeMatch = lines[1].match(/Time remaining: (\d{2}:\d{2})/);
+                if (timeMatch) timerDisplay.textContent = timeMatch[1];
+
+                const taskMatch = lines[2]?.match(/Current task: (.+)/);
+                if (taskMatch) taskDisplay.textContent = taskMatch[1];
+                else taskDisplay.textContent = '';
+            }
+        }
+        updateButtons(timerState);
+    }
+
+    function getStateText(state) {
+        switch(state) {
+            case 'focus': return 'Regular Focus (30m)';
+            case 'deep_focus': return 'Deep Focus (45m)';
+            case 'short_break': return 'Short Break (7m)';
+            case 'micro_break': return 'Micro Break (2m)';
+            case 'long_break': return 'Long Break (20m)';
+            case 'paused': return 'Timer Paused';
+            default: return `Current state: ${state}`;
+        }
+    }
+
+    // Socket event handler for timer updates
+    socket.on('timer_update', function(data) {
+        try {
+            if (!data || !data.status) return;
+            
+            const lines = data.status.split('\n');
+            const stateMatch = lines[0].match(/Current state: (\w+)/);
+            const timeMatch = lines[1]?.match(/Time remaining: (\d{2}:\d{2})/);
+            const taskMatch = lines[2]?.match(/Current task: (.+)/);
+
+            if (lines[0].includes('No active timer')) {
+                timerState = 'idle';
+                stateDisplay.textContent = 'Ready to focus';
+                timerDisplay.textContent = '30:00';
+                taskDisplay.textContent = '';
+            } else {
+                timerState = data.is_paused ? 'paused' : (stateMatch ? stateMatch[1] : 'idle');
+                stateDisplay.textContent = getStateText(timerState);
+                
+                // Keep the time frozen when paused
+                if (data.is_paused) {
+                    // Don't update the display when paused
+                } else if (timeMatch) {
+                    timerDisplay.textContent = timeMatch[1];
+                }
+                
+                if (taskMatch) {
+                    taskDisplay.textContent = taskMatch[1];
+                }
+            }
+            updateButtons(timerState);
+        } catch (error) {
+            console.error('Error updating timer display:', error);
+        }
+    });
+
+    // Update pause button handler
+    pauseBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/pause', { method: 'POST' });
+            const data = await response.json();
+            if (data.status) {
+                timerState = 'paused';
+                updateButtons(timerState);
+            }
+        } catch (error) {
+            console.error('Error pausing timer:', error);
+        }
+    });
+
+    // Update resume button handler
+    resumeBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/resume', { method: 'POST' });
+            const data = await response.json();
+            if (data.status) {
+                timerState = data.state;
+                updateButtons(timerState);
+            }
+        } catch (error) {
+            console.error('Error resuming timer:', error);
+        }
+    });
+
+    // Update button states
+    function updateButtons(state) {
+        startBtn.disabled = state !== 'idle';
+        pauseBtn.disabled = !['focus', 'deep_focus', 'short_break', 'micro_break', 'long_break'].includes(state);
+        resumeBtn.disabled = state !== 'paused';
+        stopBtn.disabled = state === 'idle';
+        completeBtn.disabled = !['focus', 'deep_focus'].includes(state);
+
+        // Update button styles
+        [startBtn, pauseBtn, resumeBtn, stopBtn, completeBtn].forEach(btn => {
+            btn.classList.toggle('opacity-50', btn.disabled);
+            btn.classList.toggle('cursor-not-allowed', btn.disabled);
+        });
+    }
+
+    // Fetch stats periodically
+    // Add this before the updateStats function
+    let statsChart;
+
+    // Update the updateStats function
+    async function updateStats() {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        statsDisplay.innerHTML = data.stats.replace(/\n/g, '<br>');
+        
+        // Parse stats data
+        const statsLines = data.stats.split('\n');
+        const chartData = {
+            labels: [],
+            values: []
+        };
+        
+        statsLines.forEach(line => {
+            if (line.includes(':')) {
+                const [label, value] = line.split(':');
+                const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+                if (!isNaN(numValue)) {
+                    chartData.labels.push(label.trim());
+                    chartData.values.push(numValue);
+                }
+            }
+        });
+
+        // Create or update chart
+        if (!statsChart) {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            statsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.values,
+                        backgroundColor: [
+                            'rgba(147, 51, 234, 0.7)',  // Purple
+                            'rgba(79, 70, 229, 0.7)',   // Indigo
+                            'rgba(59, 130, 246, 0.7)',  // Blue
+                            'rgba(16, 185, 129, 0.7)',  // Green
+                            'rgba(245, 158, 11, 0.7)'   // Yellow
+                        ],
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#4B5563',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Session Statistics',
+                            color: '#374151',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            statsChart.data.labels = chartData.labels;
+            statsChart.data.datasets[0].data = chartData.values;
+            statsChart.update();
+        }
+    }
+
+    setInterval(updateStats, 5000);
+    updateStats();
+</script>
+    
+    <!-- Load the brain animation script -->
+    <script src="/static/js/brain-animation.js"></script>
+</body>
+</html>

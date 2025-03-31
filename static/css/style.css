@@ -1,0 +1,143 @@
+/* Main styles for the Focus Timer Bot - Dark Theme */
+
+/* 3D Brain Animation Background - optimized for performance */
+#brain-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    will-change: transform; /* Hardware acceleration hint */
+}
+
+/* Ensure content is visible over the 3D background - optimized for performance */
+.content-container {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(2, 2, 4, 0.92); /* Darker semi-transparent background */
+    border-radius: 1rem;
+    backdrop-filter: blur(8px); /* Increased blur for better text contrast */
+    -webkit-backdrop-filter: blur(8px); /* For Safari support */
+    box-shadow: 0 4px 25px rgba(170, 0, 255, 0.4); /* Enhanced purple glow */
+    will-change: transform, opacity; /* Hardware acceleration hint */
+    transform: translateZ(0); /* Force GPU acceleration */
+    border: 1px solid rgba(170, 85, 255, 0.3); /* More visible purple border */
+}
+
+/* Text color overrides for dark theme */
+.content-container h1, .content-container h2 {
+    color: rgba(200, 130, 255, 1) !important; /* Brighter purple headers */
+    text-shadow: 0 0 8px rgba(170, 0, 255, 0.3); /* Subtle glow for headers */
+    font-weight: 700; /* Bolder headers */
+}
+
+.content-container #timer {
+    color: rgba(255, 255, 255, 1) !important; /* Pure white timer text */
+    text-shadow: 0 0 12px rgba(170, 0, 255, 0.6); /* Enhanced glow effect */
+    font-weight: 700; /* Bolder timer text */
+}
+
+.content-container #state, .content-container #task {
+    color: rgba(230, 230, 255, 1) !important; /* Brighter text */
+    text-shadow: 0 0 5px rgba(170, 0, 255, 0.3); /* Subtle text shadow */
+    font-weight: 500; /* Medium weight for better visibility */
+}
+
+#stats, #motivation, #chat {
+    color: rgba(230, 230, 255, 0.95) !important; /* Brighter text for better visibility */
+    text-shadow: 0 0 5px rgba(170, 0, 255, 0.2); /* Subtle shadow for depth */
+}
+
+/* Enhance chat message visibility */
+.text-blue-600 {
+    color: rgb(255, 255, 255) !important; /* Brighter blue for user messages */
+    text-shadow: 0 0 4px rgba(100, 150, 255, 0.3);
+}
+
+.text-green-600 {
+    color: rgb(245, 255, 245) !important; /* Brighter green for bot messages */
+    text-shadow: 0 0 4px rgba(100, 255, 150, 0.3);
+}
+
+/* Enhance button text visibility */
+button {
+    font-weight: 600;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+button:disabled {
+    opacity: 0.6;
+    text-shadow: none;
+}
+
+/* Chat interface styling for dark theme */
+#chat {
+    background-color: rgba(30, 30, 40, 0.7) !important; /* Dark chat background */
+    border: 1px solid rgba(170, 85, 255, 0.2); /* Subtle purple border */
+    box-shadow: inset 0 0 10px rgba(202, 33, 33, 0.531); /* Inner shadow for depth */
+}
+
+/* Chat header styling - highlight Beluga name */
+.content-container h2.beluga-chat-header {
+    color: rgba(170, 85, 255, 1) !important; /* Brighter purple for Beluga header */
+    text-shadow: 0 0 5px rgba(170, 0, 255, 0.3); /* Subtle glow effect */
+    font-weight: 700; /* Make it bolder */
+}
+
+/* Chat message styling */
+#chat .text-left {
+    color: rgba(197, 255, 121, 0.9) !important; /* Brighter green for bot messages */
+}
+
+#chat .text-right {
+    color: rgb(255, 255, 255) !important; /* Brighter blue for user messages */
+}
+
+/* Input field styling */
+input[type="text"] {
+    background-color: rgba(30, 30, 40, 0.7) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(170, 85, 255, 0.3) !important;
+}
+
+input[type="text"]:focus {
+    box-shadow: 0 0 0 3px rgba(170, 85, 255, 0.3) !important;
+    outline: none !important;
+}
+
+input[type="text"]::placeholder {
+    color: rgba(200, 200, 255, 0.5) !important;
+}
+
+/* 3D depth effect for buttons */
+button {
+    transform: translateZ(0);
+    transition: transform 0.2s, box-shadow 0.2s !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+button:not([disabled]):hover {
+    transform: translateY(-2px) translateZ(0);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+button:not([disabled]):active {
+    transform: translateY(1px) translateZ(0);
+}
+
+/* Responsive adjustments with performance optimizations */
+@media (max-width: 768px) {
+    .content-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    /* Simplify effects on mobile for better performance */
+    .content-container {
+        backdrop-filter: none; /* Disable blur on mobile for better performance */
+        -webkit-backdrop-filter: none;
+        background-color: rgba(0, 0, 0, 0.95); /* More solid dark background instead */
+    }
+}
